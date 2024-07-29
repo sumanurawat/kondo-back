@@ -38,16 +38,23 @@ jobs:
         run: |
           gcloud auth configure-docker
 
+      - name: Save service account key
+        run: |
+          echo "${{ secrets.GCP_SA_KEY }}" > "${HOME}/gcloud-service-key.json"
+
+      - name: Authenticate Docker with gcloud
+        run: |
+          gcloud auth activate-service-account --key-file="${HOME}/gcloud-service-key.json"
+          gcloud auth configure-docker
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
+
       - name: Build Docker image
         run: |
           docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/fastapi-service .
 
       - name: Push Docker image
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
         run: |
-          gcloud auth activate-service-account --key-file=${{ secrets.GCP_SA_KEY }}
-          gcloud auth configure-docker
           docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/fastapi-service
 
       - name: Deploy to Cloud Run
