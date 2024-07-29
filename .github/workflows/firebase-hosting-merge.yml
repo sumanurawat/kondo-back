@@ -43,7 +43,11 @@ jobs:
           docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/fastapi-service .
 
       - name: Push Docker image
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
         run: |
+          gcloud auth activate-service-account --key-file=${{ secrets.GCP_SA_KEY }}
+          gcloud auth configure-docker
           docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/fastapi-service
 
       - name: Deploy to Cloud Run
