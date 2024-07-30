@@ -38,21 +38,21 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      - name: Authenticate Docker with gcloud
+      - name: Configure Docker for Artifact Registry
         run: |
-          gcloud auth configure-docker
+          gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
 
       - name: Build Docker image
         run: |
-          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/fastapi-service .
+          docker build -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fastapi-service/fastapi-service .
 
       - name: Push Docker image
         run: |
-          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/fastapi-service
+          docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fastapi-service/fastapi-service
 
       - name: Deploy to Cloud Run
         run: |
-          gcloud run deploy fastapi-service --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/fastapi-service --platform managed --region us-central1 --allow-unauthenticated
+          gcloud run deploy fastapi-service --image ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/fastapi-service/fastapi-service --platform managed --region us-central1 --allow-unauthenticated
 
       - name: Install Firebase CLI
         run: |
