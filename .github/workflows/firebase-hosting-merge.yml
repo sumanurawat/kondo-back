@@ -5,17 +5,22 @@ on:
     branches:
       - main
 
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  SERVICE_NAME: fastapi-service
+  REGION: us-central1
+
 jobs:
-  build:
+  build-and-deploy:
     name: Build and Deploy
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
@@ -25,38 +30,39 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run tests
-        run: |
-          pytest
+        run: pytest
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v1
         with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          project_id: ${{ env.PROJECT_ID }}
 
-      - name: Save service account key
-        run: |
-          echo "${{ secrets.GCP_SA_KEY }}" > $HOME/gcloud-service-key.json
-
-      - name: Authenticate Docker with gcloud
-        run: |
-          gcloud auth activate-service-account --key-file="$HOME/gcloud-service-key.json"
-          gcloud auth configure-docker
+      - name: Configure Docker
+        run: gcloud auth configure-docker
 
       - name: Build Docker image
         run: |
-          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/fastapi-service .
+          docker build -t gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} .
 
       - name: Push Docker image
         run: |
-          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/fastapi-service
+          docker push gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
 
       - name: Deploy to Cloud Run
         run: |
-          gcloud run deploy fastapi-service --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/fastapi-service --platform managed --region us-central1 --allow-unauthenticated
+          gcloud run deploy ${{ env.SERVICE_NAME }} \
+            --image gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --allow-unauthenticated
 
       - name: Install Firebase CLI
-        run: |
-          curl -sL https://firebase.tools | bash
+        run: npm install -g firebase-tools
 
       - name: Deploy to Firebase Hosting
         run: |
