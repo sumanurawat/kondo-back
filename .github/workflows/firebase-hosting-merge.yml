@@ -32,13 +32,10 @@ jobs:
         uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
 
       - name: Save service account key
         run: |
-          echo "${{ secrets.GCP_SA_KEY }}" | base64 --decode > $HOME/gcloud-service-key.json
-        env:
-          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+          echo "${{ secrets.GCP_SA_KEY }}" > $HOME/gcloud-service-key.json
 
       - name: Authenticate Docker with gcloud
         run: |
