@@ -34,17 +34,14 @@ jobs:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           service_account_key: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Configure Docker
-        run: |
-          gcloud auth configure-docker
-
       - name: Save service account key
         run: |
-          echo "${{ secrets.GCP_SA_KEY }}" > "${HOME}/gcloud-service-key.json"
+          echo "${{ secrets.GCP_SA_KEY }}" > $HOME/gcloud-service-key.json
 
       - name: Authenticate Docker with gcloud
         run: |
-          gcloud auth activate-service-account --key-file="${HOME}/gcloud-service-key.json"
+          echo ${{ secrets.GCP_SA_KEY }} | base64 --decode > $HOME/gcloud-service-key.json
+          gcloud auth activate-service-account --key-file="$HOME/gcloud-service-key.json"
           gcloud auth configure-docker
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
