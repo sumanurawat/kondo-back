@@ -28,19 +28,18 @@ jobs:
         run: |
           pytest
 
+      - name: Authenticate with service account
+        uses: google-github-actions/auth@v0
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      - name: Save service account key
-        run: |
-          echo "${{ secrets.GCP_SA_KEY }}" > "$HOME/gcloud-service-key.json"
-
       - name: Authenticate Docker with gcloud
         run: |
-          echo "${{ secrets.GCP_SA_KEY }}" > "$HOME/gcloud-service-key.json"
-          gcloud auth activate-service-account --key-file="$HOME/gcloud-service-key.json"
           gcloud auth configure-docker
 
       - name: Build Docker image
