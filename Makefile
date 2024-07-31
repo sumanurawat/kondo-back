@@ -1,6 +1,7 @@
 # Set your project name and region here
 PROJECT_NAME=kondo-back
 REGION=us-east1
+GCP_PROJECT=kondo-21401
 
 install:
 	pip install -r requirements.txt
