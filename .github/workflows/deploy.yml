@@ -11,6 +11,8 @@ jobs:
 
     env:
       GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
+      REGION: us-east1
+      PROJECT_NAME: kondo-back
 
     steps:
     - name: Checkout code
@@ -29,16 +31,16 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t gcr.io/${{ secrets.GCP_PROJECT }}/fastapi-app .
+        docker build -t gcr.io/${{ secrets.GCP_PROJECT }}/kondo-back .
 
     - name: Push Docker image
       run: |
-        docker push gcr.io/${{ secrets.GCP_PROJECT }}/fastapi-app
+        docker push gcr.io/${{ secrets.GCP_PROJECT }}/kondo-back
 
     - name: Deploy to Cloud Run
       run: |
         gcloud run deploy kondo-back \
-          --image gcr.io/${{ secrets.GCP_PROJECT }}/fastapi-app \
+          --image gcr.io/${{ secrets.GCP_PROJECT }}/kondo-back \
           --platform managed \
           --region us-east1 \
           --allow-unauthenticated

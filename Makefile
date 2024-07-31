@@ -1,5 +1,6 @@
-# Set your project name here
-IMAGE_NAME=gcr.io/$(GCP_PROJECT)/$(PROJECT_NAME)
+# Set your project name and region here
+PROJECT_NAME=kondo-back
+REGION=us-east1
 
 install:
 	pip install -r requirements.txt
@@ -24,4 +25,17 @@ test:
 format:
 	black .
 
-.PHONY: install run test format clean
+deploy:
+	@echo "Building Docker image..."
+	docker build -t gcr.io/${GCP_PROJECT}/${PROJECT_NAME} .
+	@echo "Pushing Docker image to Google Container Registry..."
+	docker push gcr.io/${GCP_PROJECT}/${PROJECT_NAME}
+	@echo "Deploying to Google Cloud Run..."
+	gcloud run deploy ${PROJECT_NAME} \
+		--image gcr.io/${GCP_PROJECT}/${PROJECT_NAME} \
+		--platform managed \
+		--region ${REGION} \
+		--allow-unauthenticated
+	@echo "Deployment complete."
+
+.PHONY: install run test format clean deploy
