@@ -1,21 +1,20 @@
-# Use the official Python image.
-# https://hub.docker.com/_/python
-FROM python:3.9-slim
+# Use the official FastAPI image
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.8
 
-# Set the working directory to /app
+# Set the working directory
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
-COPY . /app
+# Copy the requirements file
+COPY requirements.txt .
 
-# Install any needed packages specified in requirements.txt
+# Install the dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Make port 80 available to the world outside this container
-EXPOSE 80
+# Copy the FastAPI app code
+COPY . .
 
-# Define environment variable
-ENV NAME World
+# Set the PORT environment variable
+ENV PORT 8080
 
-# Run app.py when the container launches
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
+# Command to run the app
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
